@@ -1,17 +1,17 @@
 .\"                                      Hey, EMACS: -*- nroff -*-
 .TH UNICODE 1 "2003-01-31"
 .SH NAME
-unicode \- command line unicode database query tool
+unisearch \- command line unicode database query tool
 .SH SYNOPSIS
-.B unicode
+.B unisearch
 .RI [ options ]
 string
 .SH DESCRIPTION
 This manual page documents the
-.B unicode
+.B unisearch
 command.
 .PP
-\fBunicode\fP is a command line unicode database query tool.
+\fBunisearch\fP is a command line unicode database query tool.
 
 .SH OPTIONS
 .TP
@@ -93,8 +93,8 @@ Maximal number of codepoints to display, default: 20; use 0 for unlimited
 .BI \-i CHARSET
 .BI \-\-io= IOCHARSET
 
-I/O character set. For maximal pleasure, run \fBunicode\fP on UTF-8
-capable terminal and specify IOCHARSET to be UTF-8. \fBunicode\fP
+I/O character set. For maximal pleasure, run \fBunisearch\fP on UTF-8
+capable terminal and specify IOCHARSET to be UTF-8. \fBunisearch\fP
 tries to guess this value from your locale, so with properly set up
 locale, you should not need to specify it.
 
@@ -187,53 +187,53 @@ Display ASCII table (EU–UK Trade and Cooperation Agreement 2020 version)
 
 .SH USAGE
 
-\fBunicode\fP tries to guess the type of an argument. In particular,
+\fBunisearch\fP tries to guess the type of an argument. In particular,
 if the arguments looks like a valid hexadecimal representation of a
 Unicode codepoint, it will be considered to be such. Using
 
-\fBunicode\fP face
+\fBunisearch\fP face
 
 will display information about U+FACE CJK COMPATIBILITY IDEOGRAPH-FACE,
 and it will not search for 'face' in character descriptions \- for the latter,
 use:
 
-\fBunicode\fP \-r face
+\fBunisearch\fP \-r face
 
 
 For example, you can use any of the following to display information
 about  U+00E1 LATIN SMALL LETTER A WITH ACUTE (\('a):
 
-\fBunicode\fP 00E1
+\fBunisearch\fP 00E1
 
-\fBunicode\fP U+00E1
+\fBunisearch\fP U+00E1
 
-\fBunicode\fP \('a
+\fBunisearch\fP \('a
 
-\fBunicode\fP 'latin small letter a with acute'
+\fBunisearch\fP 'latin small letter a with acute'
 
 
-You can specify a range of characters as argumets, \fBunicode\fP will
+You can specify a range of characters as argumets, \fBunisearch\fP will
 show these characters in nice tabular format, aligned to 256-byte boundaries.
 Use two dots ".." to indicate the range, e.g.
 
-\fBunicode\fP 0450..0520
+\fBunisearch\fP 0450..0520
 
 will display the whole cyrillic and hebrew blocks (characters from U+0400 to U+05FF)
 
-\fBunicode\fP 0400..
+\fBunisearch\fP 0400..
 
 will display just characters from U+0400 up to U+04FF
 
 Use \-\-fromcp to query codepoints from other encodings:
 
-\fBunicode\fP \-\-fromcp cp1250 \-d 200
+\fBunisearch\fP \-\-fromcp cp1250 \-d 200
 
 Multibyte encodings are supported:
-\fBunicode\fP \-\-fromcp big5 \-x aff3
+\fBunisearch\fP \-\-fromcp big5 \-x aff3
 
 and multi-char strings are supported, too:
 
-\fBunicode\fP \-\-fromcp utf-8 \-x c599c3adc5a5
+\fBunisearch\fP \-\-fromcp utf-8 \-x c599c3adc5a5
 
 .SH BUGS
 Tabular format does not deal well with full-width, combining, control

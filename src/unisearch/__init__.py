@@ -1108,6 +1108,8 @@ def main():
         # in python3, argv is automatically decoded into unicode
         # but we have to check for surrogates
         argum = argum.encode(options.iocharset, 'surrogateescape')
+        try:
+            argum = argum.decode(options.iocharset)
         except UnicodeDecodeError:
             error ("Sequence %s is not valid in charset '%s'." % (repr(argum),  options.iocharset))
         is_r = is_range(argum, options.type)

@@ -1,0 +1,45 @@
+[project]
+name = "unisearch"
+version = "0.0.0"
+description = "cli tool to display unicode character properties "
+
+requires-python = ">=3.10"
+dependencies = []
+
+readme = "README.txt"
+license = "GPL-3.0-only"
+license-files = ["LICENSE"]
+
+authors = [
+    { name = "Radovan Garabík", email = "garabik@kassiopeia.juls.savba.sk" },
+    { name = "SandaruKasa", email = "sandarukasa@ya.ru" },
+]
+maintainers = [{ name = "SandaruKasa", email = "sandarukasa@ya.ru" }]
+
+keywords = ['unicode', 'character properties', 'encoding']
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Topic :: Text Editors :: Text Processing',
+    'Topic :: Utilities',
+]
+
+[project.urls]
+Homepage = "https://github.com/SandaruKasa/unisearch"
+Repository = "https://github.com/SandaruKasa/unisearch"
+Issues = "https://github.com/SandaruKasa/unisearch/issues"
+Changelog = "https://github.com/SandaruKasa/unisearch/blob/trunk/CHANGELOG.md"
+
+[project.scripts]
+unisearch = "unisearch:main"
+
+[build-system]
+requires = ["uv_build >= 0.9.5, <0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+managed = false
