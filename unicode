@@ -1,91 +1,37 @@
-#!/usr/bin/python3
-
-from __future__ import unicode_literals, print_function
+#!/usr/bin/env python3
 
 import os, glob, sys, unicodedata, locale, gzip, re, traceback, encodings, io, shutil
 import webbrowser, textwrap, struct
 
-#from pprint import pprint
-
-# bz2 was introduced in 2.3, but we want this to work even if for some
-# reason it is not available
-try:
-    import bz2
-except ImportError:
-    bz2 = None
-try:
-    import lzma
-except ImportError:
-    lzma = None
+import bz2
+import lzma
 
 def get_unicode_cur_version():
     # return current version of the Unicode standard, hardwired for now
     return '16.0.0'
 
-PY3 = sys.version_info[0] >= 3
+import subprocess as cmd
+from urllib.parse import quote as urlquote
+import io
+from urllib.request import urlopen
 
-if PY3:
-    import subprocess as cmd
-    from urllib.parse import quote as urlquote
-    import io
-    from urllib.request import urlopen
-
-    def broken_pipe_handler(func):
-        def inner_function(*args, **kwargs):
-            try:
-                func(*args, **kwargs)
-            except BrokenPipeError:
-                sys.stdout = None
-                sys.exit(1)
-        return inner_function
+def broken_pipe_handler(func):
+    def inner_function(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except BrokenPipeError:
+            sys.stdout = None
+            sys.exit(1)
+    return inner_function
 
 
-    @broken_pipe_handler
-    def out(*args):
-        "pring args, converting them to output charset"
-        for i in args:
-            if sys.stdout:
-                #sys.stdout.flush()
-                sys.stdout.buffer.write(i.encode(options.iocharset, 'replace'))
-
-    # ord23 is used to convert elements of byte array in python3, which are already integers
-    ord23 = lambda x: x
-    chr_orig = chr
-
-else: # python2
-
-    # getoutput() and getstatusoutput() methods have
-    # been moved from commands to the subprocess module
-    # with Python >= 3.x
-    import commands as cmd
-
-    from urllib import quote as urlquote
-    from urllib import urlopen
-
-    def broken_pipe_handler(func):
-        def inner_function(*args, **kwargs):
-            try:
-                func(*args, **kwargs)
-            except IOError:
-                 sys.stdout = None
-                 sys.exit(1)
-        return inner_function
-
-    @broken_pipe_handler
-    def out(*args):
-        "pring args, converting them to output charset"
-        for i in args:
-            if sys.stdout:
-                sys.stdout.write(i.encode(options.iocharset, 'replace'))
-
-    ord23 = ord
-
-    # python3-like chr
-    chr_orig = chr
-    chr = unichr
-    str = unicode
-    range = xrange
-
+@broken_pipe_handler
+def out(*args):
+    "pring args, converting them to output charset"
+    for i in args:
+        if sys.stdout:
+            #sys.stdout.flush()
+            sys.stdout.buffer.write(i.encode(options.iocharset, 'replace'))
 
 from optparse import OptionParser
 
@@ -356,11 +302,11 @@ def do_init():
         glob.glob('/System/Library/Perl/*/unicore/UnicodeData.txt') # for MacOSX
 
     global UnihanDataGlobs
-    UnihanDataGlobs = [os.path.join(x, 'Unihan*') for x in UnicodeDataDirs] 
+    UnihanDataGlobs = [os.path.join(x, 'Unihan*') for x in UnicodeDataDirs]
     global UnicodeBlocksFiles
-    UnicodeBlocksFiles = [os.path.join(x, 'Blocks.txt') for x in UnicodeDataDirs] 
+    UnicodeBlocksFiles = [os.path.join(x, 'Blocks.txt') for x in UnicodeDataDirs]
     global DerivedAgeFiles
-    DerivedAgeFiles =[os.path.join(x, 'DerivedAge.txt') for x in UnicodeDataDirs] 
+    DerivedAgeFiles =[os.path.join(x, 'DerivedAge.txt') for x in UnicodeDataDirs]
 
     # cache where grepped unicode properties are kept
     global linecache
@@ -412,8 +358,6 @@ def get_unihan_properties_zgrep(ch):
             grepcmd = 'grep'
         cmdline = grepcmd+' ^'+chs+r'\\b '+f
         status, output = cmd.getstatusoutput(cmdline)
-        if not PY3:
-            output = unicode(output, 'utf-8')
         output = output.split('\n')
         for l in output:
             if not l:
@@ -548,10 +492,7 @@ def valfromcp(n, cp=None):
             xh = '0'+xh
         cps = ( [xh[i:i+2] for i in range(0,len(xh),2)] )
         cps = ( int(i, 16) for i in cps)
-        # we have to use chr_orig (it's original chr for python2) and not 'B'
-        # because unicode_literals it will be unicode, which
-        # is not permitted in struct.pack in python2.6
-        cps = ( struct.pack(chr_orig(0x42),i) for i in cps ) # this works in both python3 and python2, unlike bytes([i])
+        cps = ( struct.pack(chr(0x42),i) for i in cps ) # this works in both python3 and python2, unlike bytes([i])
         cps = b''.join(cps)
         try:
             cps = cps.decode(cp)
@@ -742,15 +683,15 @@ def print_characters(clist, maxcount, format_string, query_wikipedia=0, query_wi
         if 0xd800 <= ordc <= 0xdfff: # surrogate
             utf8 = utf16be = 'N/A'
         else:
-            utf8 = ' '.join([("%02x" % ord23(x)) for x in c.encode('utf-8')])
-            utf16be = ''.join([("%02x" % ord23(x)) for x in c.encode('utf-16be')])
+            utf8 = ' '.join([("%02x" % x) for x in c.encode('utf-8')])
+            utf16be = ''.join([("%02x" % x) for x in c.encode('utf-16be')])
         decimal = "&#%s;" % ordc
         octal = "\\0%o" % ordc
 
         addcharset = options.addcharset
         if addcharset:
             try:
-                in_additional_charset = ' '.join([("%02x" % ord23(x)) for x in c.encode(addcharset)] )
+                in_additional_charset = ' '.join([("%02x" % x) for x in c.encode(addcharset)] )
             except UnicodeError:
                 in_additional_charset = "NONE"
 
@@ -1164,12 +1105,9 @@ def main():
 
     l_args = [] # list of non range arguments to process
     for argum in arguments:
-        if PY3:
-            # in python3, argv is automatically decoded into unicode
-            # but we have to check for surrogates
-            argum = argum.encode(options.iocharset, 'surrogateescape')
-        try:
-            argum = argum.decode(options.iocharset)
+        # in python3, argv is automatically decoded into unicode
+        # but we have to check for surrogates
+        argum = argum.encode(options.iocharset, 'surrogateescape')
         except UnicodeDecodeError:
             error ("Sequence %s is not valid in charset '%s'." % (repr(argum),  options.iocharset))
         is_r = is_range(argum, options.type)
