@@ -25,7 +25,7 @@ let
     else
       unicode-character-database;
 in
-buildPythonApplication rec {
+buildPythonApplication {
   name = "unisearch";
   pyproject = true;
 
@@ -59,10 +59,10 @@ buildPythonApplication rec {
   meta = {
     description = "CLI tool to display Unicode character properties";
     homepage = "https://github.com/SandaruKasa/unisearch";
-    changelog = "https://github.com/SandaruKasa/unisearch/blob/${src.rev}/CHANGELOG.md";
-    license = lib.licenses.gpl3Only;
+    changelog = "https://github.com/SandaruKasa/unisearch/blob/trunk/CHANGELOG.md";
+    license = [ lib.licenses.gpl3Only ];
     maintainers = with lib.maintainers; [ sandarukasa ];
     mainProgram = "unisearch";
-    platform = lib.platforms.linux;
+    platforms = lib.platforms.linux;
   };
 }

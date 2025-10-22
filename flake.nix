@@ -25,6 +25,7 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [ self.overlays.default ];
+          config.checkMeta = true;
         };
       in
       {
