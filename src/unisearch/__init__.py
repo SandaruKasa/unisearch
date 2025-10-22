@@ -319,6 +319,13 @@ def do_init():
     HomeUnicodeData = os.path.join(custom_dir, "UnicodeData.txt")
     global UnicodeDataFileNames
     UnicodeDataDirs = [custom_dir, '/usr/share/unicode', '/usr/share/unicode-data', '/usr/share/unidata', '/usr/share/unicode/ucd', '.']
+    from_env = os.environ.get("UNICODE_DATA_DIR")
+    if from_env:
+        from_env = Path(from_env)
+        if from_env.is_dir():
+            UnicodeDataDirs = [str(from_env)]
+        else:
+            warn("Specified $UNICODE_DATA_DIR does not exists or is not a directory, ignoring")
     UnicodeDataFileNames = [os.path.join(x, 'UnicodeData.txt') for x in UnicodeDataDirs] + \
         glob.glob('/usr/share/unidata/UnicodeData*.txt') + \
         glob.glob('/usr/share/perl/*/unicore/UnicodeData.txt')

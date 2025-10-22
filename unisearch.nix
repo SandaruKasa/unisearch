@@ -35,9 +35,13 @@ buildPythonApplication rec {
     "unisearch"
   ];
 
-  # TODO: provide unicode data
   # TODO: install man pages
-  # TODO: zgrep and stuff
+
+  makeWrapperArgs = [
+    "--set"
+    "UNICODE_DATA_DIR"
+    "${unicode-data}/share/unicode/"
+  ];
 
   passthru = {
     inherit unicode-data;
