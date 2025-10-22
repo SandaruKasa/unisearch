@@ -298,8 +298,7 @@ def do_init():
     UnicodeDataDirs = [HomeDir, '/usr/share/unicode', '/usr/share/unicode-data', '/usr/share/unidata', '/usr/share/unicode/ucd', '.']
     UnicodeDataFileNames = [os.path.join(x, 'UnicodeData.txt') for x in UnicodeDataDirs] + \
         glob.glob('/usr/share/unidata/UnicodeData*.txt') + \
-        glob.glob('/usr/share/perl/*/unicore/UnicodeData.txt') + \
-        glob.glob('/System/Library/Perl/*/unicore/UnicodeData.txt') # for MacOSX
+        glob.glob('/usr/share/perl/*/unicore/UnicodeData.txt')
 
     global UnihanDataGlobs
     UnihanDataGlobs = [os.path.join(x, 'Unihan*') for x in UnicodeDataDirs]
@@ -319,11 +318,32 @@ def get_unihan_files():
         fos += fnames
     return fos
 
-def get_unihan_properties_internal(ch):
+def get_unihan_properties_single(ch, f):
     properties = {}
-    ch = ord(ch)
-    global unihan_fs
-    for f in unihan_fs:
+    if f.endswith('.gz'):
+        grepcmd = 'zgrep'
+    elif f.endswith('.bz2'):
+        grepcmd = 'bzgrep'
+    elif f.endswith('.xz'):
+        grepcmd = 'xzgrep'
+    else:
+        grepcmd = 'grep'
+
+    grep_is_ok = shutil.which(grepcmd) is not None
+    if grep_is_ok:
+        chs = 'U+%X' % ch
+        cmdline = grepcmd+' ^'+chs+r'\\b '+f
+        status, output = cmd.getstatusoutput(cmdline)
+        output = output.split('\n')
+        for l in output:
+            if not l:
+                continue
+            char, key, value = l.strip().split('\t')
+            if int(char[2:], 16) == ch:
+                properties[key] = value
+            elif int(char[2:], 16)>ch:
+                break
+    else:
         fo = AutoOpen(f)
         for l in fo:
             if l.startswith('#'):
@@ -342,39 +362,12 @@ def get_unihan_properties_internal(ch):
         fo.close()
     return properties
 
-def get_unihan_properties_zgrep(ch):
+def get_unihan_properties(ch):
     properties = {}
-    global unihan_fs
     ch = ord(ch)
-    chs = 'U+%X' % ch
     for f in unihan_fs:
-        if f.endswith('.gz'):
-            grepcmd = 'zgrep'
-        elif f.endswith('.bz2'):
-            grepcmd = 'bzgrep'
-        elif f.endswith('.xz'):
-            grepcmd = 'xzgrep'
-        else:
-            grepcmd = 'grep'
-        cmdline = grepcmd+' ^'+chs+r'\\b '+f
-        status, output = cmd.getstatusoutput(cmdline)
-        output = output.split('\n')
-        for l in output:
-            if not l:
-                continue
-            char, key, value = l.strip().split('\t')
-            if int(char[2:], 16) == ch:
-                properties[key] = value
-            elif int(char[2:], 16)>ch:
-                break
+        properties |= get_unihan_properties_single(ch, f)
     return properties
-
-
-# basic sanity check, if e.g. you run this on MS Windows...
-if os.path.exists('/bin/grep'):
-    get_unihan_properties = get_unihan_properties_zgrep
-else:
-    get_unihan_properties = get_unihan_properties_internal
 
 
 def get_gzip_filename(fname):
@@ -383,9 +376,9 @@ def get_gzip_filename(fname):
         return fname
     if os.path.exists(fname+'.gz'):
         return fname+'.gz'
-    if os.path.exists(fname+'.bz2') and bz2 is not None:
+    if os.path.exists(fname+'.bz2'):
         return fname+'.bz2'
-    if os.path.exists(fname+'.xz') and lzma is not None:
+    if os.path.exists(fname+'.xz'):
         return fname+'.xz'
 
     return None
