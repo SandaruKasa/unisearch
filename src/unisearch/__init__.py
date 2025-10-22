@@ -1,19 +1,31 @@
 #!/usr/bin/env python3
 
-import os, glob, sys, unicodedata, locale, gzip, re, traceback, encodings, io, shutil
-import webbrowser, textwrap, struct
-
 import bz2
+import encodings
+import glob
+import gzip
+import io
+import locale
 import lzma
+import os
+import re
+import shutil
+import struct
+import subprocess as cmd
+import sys
+import textwrap
+import traceback
+import unicodedata
+import webbrowser
+from pathlib import Path
+from urllib.parse import quote as urlquote
+from urllib.request import urlopen
+
 
 def get_unicode_cur_version():
     # return current version of the Unicode standard, hardwired for now
     return '16.0.0'
 
-import subprocess as cmd
-from urllib.parse import quote as urlquote
-import io
-from urllib.request import urlopen
 
 def broken_pipe_handler(func):
     def inner_function(*args, **kwargs):
@@ -34,6 +46,7 @@ def out(*args):
             sys.stdout.buffer.write(i.encode(options.iocharset, 'replace'))
 
 from optparse import OptionParser
+
 
 @broken_pipe_handler
 def flush_output():
@@ -291,11 +304,21 @@ def get_unicode_properties(ch):
     properties['east_asian_width'] = get_east_asian_width(ch)
     return properties
 
+def get_dir():
+    HomeDir = Path.home() / ".unicode"
+    if HomeDir.exists():
+        return HomeDir
+    xdg_dir = os.environ.get("XDG_DATA_HOME")
+    xdg_dir = Path(xdg_dir) if xdg_dir else None
+    xdg_dir = xdg_dir if xdg_dir and xdg_dir.is_absolute() else Path.home() / ".local" / "share"
+    return xdg_dir / "unicode"
+
+
 def do_init():
-    HomeDir = os.path.expanduser('~/.unicode')
-    HomeUnicodeData = os.path.join(HomeDir, "UnicodeData.txt")
+    custom_dir = get_dir()
+    HomeUnicodeData = os.path.join(custom_dir, "UnicodeData.txt")
     global UnicodeDataFileNames
-    UnicodeDataDirs = [HomeDir, '/usr/share/unicode', '/usr/share/unicode-data', '/usr/share/unidata', '/usr/share/unicode/ucd', '.']
+    UnicodeDataDirs = [custom_dir, '/usr/share/unicode', '/usr/share/unicode-data', '/usr/share/unidata', '/usr/share/unicode/ucd', '.']
     UnicodeDataFileNames = [os.path.join(x, 'UnicodeData.txt') for x in UnicodeDataDirs] + \
         glob.glob('/usr/share/unidata/UnicodeData*.txt') + \
         glob.glob('/usr/share/perl/*/unicore/UnicodeData.txt')
@@ -406,14 +429,14 @@ def get_unicodedata_url():
 def download_unicodedata():
     url = get_unicodedata_url()
     warn('Starting download of UnicodeData.txt from ', url)
-    HomeDir = os.path.expanduser('~/.unicode')
-    HomeUnicodeData = os.path.join(HomeDir, "UnicodeData.txt.gz")
+    custom_dir = get_dir()
+    HomeUnicodeData = os.path.join(custom_dir, "UnicodeData.txt.gz")
 
     # we want to minimize the chance of leaving a corrupted file around
     tmp_file = HomeUnicodeData+'.tmp'
     try:
-        if not os.path.exists(HomeDir):
-            os.makedirs(HomeDir)
+        if not os.path.exists(custom_dir):
+            os.makedirs(custom_dir)
         response = urlopen(url)
         r = response.getcode()
         if r != 200:
@@ -444,13 +467,13 @@ def GrepInNames(pattern, prefill_cache=False):
         out( """
 Cannot find UnicodeData.txt, please place it into
 /usr/share/unidata/UnicodeData.txt,
-/usr/share/unicode/UnicodeData.txt, ~/.unicode/ or current
+/usr/share/unicode/UnicodeData.txt, {} or current
 working directory (optionally you can gzip, bzip2 or xz it).
 Without the file, searching will be much slower, using internal version {}
 
 You can download the file from {} (or replace {} with current Unicode version); or run {} --download
 
-""".format(unicodedata.unidata_version, get_unicodedata_url(), get_unicode_cur_version(), sys.argv[0]))
+""".format(get_dir(), unicodedata.unidata_version, get_unicodedata_url(), get_unicode_cur_version(), sys.argv[0]))
 
     if prefill_cache:
         if f:
@@ -1117,10 +1140,10 @@ def main():
         if options.verbosity>0:
             unihan_fs = get_unihan_files() # list of file names for Unihan data file(s), empty if not available
             if not unihan_fs:
-                out( """
+                out( f"""
 Unihan_*.txt files not found. In order to view Unihan properties,
 please place the files into /usr/share/unidata/,
-/usr/share/unicode/, ~/.unicode/
+/usr/share/unicode/, {get_dir()}
 or current working directory (optionally you can gzip, bzip2 or xz them).
 You can get the files by unpacking ftp://ftp.unicode.org/Public/UNIDATA/Unihan.zip
 Warning, listing UniHan Properties is rather slow.
