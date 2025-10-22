@@ -1,7 +1,11 @@
 {
   lib,
+
   buildPythonApplication,
   uv-build,
+
+  installShellFiles,
+
   symlinkJoin,
 
   unicode-character-database,
@@ -35,8 +39,6 @@ buildPythonApplication rec {
     "unisearch"
   ];
 
-  # TODO: install man pages
-
   makeWrapperArgs = [
     "--set"
     "UNICODE_DATA_DIR"
@@ -46,6 +48,13 @@ buildPythonApplication rec {
   passthru = {
     inherit unicode-data;
   };
+
+  nativeBuildInputs = [
+    installShellFiles
+  ];
+  postInstall = ''
+    installManPage ./doc/man/*
+  '';
 
   meta = {
     description = "CLI tool to display Unicode character properties";
