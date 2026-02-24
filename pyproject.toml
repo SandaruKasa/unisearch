@@ -38,7 +38,7 @@ Changelog = "https://github.com/SandaruKasa/unisearch/blob/trunk/CHANGELOG.md"
 unisearch = "unisearch:main"
 
 [build-system]
-requires = ["uv_build >= 0.8.0, <0.10.0"]
+requires = ["uv_build >= 0.8.0, <0.11.0"]
 build-backend = "uv_build"
 
 [tool.uv]
