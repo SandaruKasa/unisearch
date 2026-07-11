@@ -32,6 +32,11 @@ buildPythonApplication {
 
   pyproject = true;
 
+  outputs = [
+    "out"
+    "man"
+  ];
+
   src = ./.;
 
   build-system = [
