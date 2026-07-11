@@ -24,9 +24,12 @@ let
       }
     else
       unicode-character-database;
+  manifest = lib.fromTOML (lib.readFile ./pyproject.toml);
 in
 buildPythonApplication {
-  name = "unisearch";
+  pname = manifest.project.name;
+  version = manifest.project.version;
+
   pyproject = true;
 
   src = ./.;
